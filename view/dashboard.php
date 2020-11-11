@@ -94,6 +94,17 @@ if (! empty($_SESSION["userId"])) {
                                 <i class="fa fa-save " aria-hidden="true"></i></a>
                         </td>
                     </tr>
+
+                    <tr v-show="editing">
+                        <td v-for="itemForm in editFormOptions">
+                            <input @keypress="isNumber($event, itemForm.isNumber)" class="form-control" 
+                                v-model="itemForm.value" placeholder="">
+                        </td>
+                        <td>
+                            <a v-on:click="saveEditProduct" class="btn btn-m pull-right btn-create">
+                                    <i class="fa fa-save " aria-hidden="true"></i></a>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -232,6 +243,45 @@ if (! empty($_SESSION["userId"])) {
                 center: false
             }
         ],
+        editFormOptions: [
+            {
+                text: 'Nombre del producto',
+                name: 'name',
+                isNumber: false,
+                value: '',
+                center: false
+            }, {
+                text: 'Referencia',
+                name: 'reference',
+                isNumber: false,
+                value: '',
+                center: false
+            }, {
+                text: 'Precio',
+                name: 'price',
+                isNumber: true,
+                value: '',
+                center: false
+            },{
+                text: 'Peso',
+                name: 'weight',
+                isNumber: true,
+                value: '',
+                center: false
+            },{
+                text: 'Categoria',
+                name: 'category',
+                isNumber: false,
+                value: '',
+                center: false
+            }, {
+                text: 'Stock',
+                name: 'stock',
+                isNumber: true,
+                value: '',
+                center: false
+            }
+        ],
         products: [],
     },
     methods: {
@@ -303,14 +353,16 @@ if (! empty($_SESSION["userId"])) {
                 });
         },
         editProduct: function(id){
-            // this.editing = true;
-            // var productEdit = this.products.find(x => x.id == id)
-            // this.idEdit = id;
-            // this.editFormOptions[0].value= productEdit.name;
-            // this.editFormOptions[1].value= productEdit.stock;
-            // this.editFormOptions[2].value= productEdit.description;
-            // this.dropDowns[1].selectedItem = productEdit.status;
-            // console.log(id);
+            this.editing = true;
+            var productEdit = this.products.find(x => x.id == id)
+            this.idEdit = id;
+            this.editFormOptions[0].value = productEdit.name;
+            this.editFormOptions[1].value = productEdit.reference;
+            this.editFormOptions[2].value = productEdit.price;
+            this.editFormOptions[3].value = productEdit.weight;
+            this.editFormOptions[4].value = productEdit.category;
+            this.editFormOptions[5].value = productEdit.stock;
+            console.log(id);
             console.log("not even implemented");
         },
         saveProduct: function () {
@@ -363,9 +415,66 @@ if (! empty($_SESSION["userId"])) {
                         console.log(error);
                     }
                 });
-            }
+            };
     
         },
+        saveEditProduct: function(){
+            Swal.fire({
+                    title: 'Oops!',
+                    text: 'Misssing time, sorry, i have not time to implement this funtionality, but the sql statement is done.',
+                    icon: 'error',
+                    confirmButtonText: 'Aceptar'
+                });
+            var obj = this;
+            var id = this.idEdit;
+            if (this.editFormOptions.some(x => x.value == "")) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Por favor diligencie todos los campos',
+                    icon: 'error',
+                    confirmButtonText: 'Aceptar'
+                });
+            } else {
+                let name = reference =  price = weight =  category = stock = 0;
+
+                name = this.editFormOptions[0].value; 
+                reference = this.editFormOptions[1].value; 
+                price = this.editFormOptions[2].value;
+                weight = this.editFormOptions[3].value;
+                category = this.editFormOptions[4].value;
+                stock = this.editFormOptions[5].value;
+
+                var data = {id: id, name: name, reference: reference, price: price, weight: weight, category: category, stock: stock };
+                data = JSON.stringify(data);
+                console.log(data);
+
+                $.ajax({
+                    url: './class/product-edit.php',
+                    data: {'information': data},
+                    type: 'Post',
+                    async : false,
+                    success: function (result) {
+                        console.log("estoy..");
+                        //upate all required variables.
+                        obj.adding = false;
+                        obj.clearForm();
+                        obj.getInfo('products.php', 'get');
+                        Swal.fire({
+                            title: 'Éxito!',
+                            html: 'Producto Editado exitosamente',
+                            icon: 'success',
+                            confirmButtonText: 'Aceptar'
+                        });
+                        
+                        console.log("estoy..");
+                      
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+        }
+    }
 
     },
     beforeMount() {

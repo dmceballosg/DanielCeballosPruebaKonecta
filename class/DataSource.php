@@ -79,6 +79,21 @@ class DataSource
         }
     }
 
+          /**
+     * To delete database results withwhere clausule
+     * @param string $query
+     * @param string $paramType
+     * @param array $paramArray
+     * @return array
+     */
+    public function simpleDelete($query, $paramType, $paramArray){
+        print $query;
+        $stmt = $this->conn->prepare($query);
+        $this->bindQueryParams($stmt,$paramType, $paramArray);
+        $stmt->execute();
+        return true;
+    }
+
     /**
      * To get database results
      * @param string $query

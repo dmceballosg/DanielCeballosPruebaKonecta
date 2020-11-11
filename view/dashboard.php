@@ -31,6 +31,9 @@ if (! empty($_SESSION["userId"])) {
 
     <!-- FontAwesome icons -->
     <script src="https://kit.fontawesome.com/c0292cf274.js" crossorigin="anonymous"></script>
+
+    <!-- Coolest Alerts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     
 </head>
 <body>
@@ -276,32 +279,45 @@ if (! empty($_SESSION["userId"])) {
                 }
             });
         },
-
-        editProduct: function(id){
-            this.editing = true;
-            var productEdit = this.products.find(x => x.id == id)
-            this.idEdit = id;
-            this.editFormOptions[0].value= productEdit.name;
-            this.editFormOptions[1].value= productEdit.stock;
-            this.editFormOptions[2].value= productEdit.description;
-            this.dropDowns[1].selectedItem = productEdit.status;
-            console.log(id);
-        },
-
         deleteProduct: function(id){
-            this.editing = true;
-            var productEdit = this.products.find(x => x.id == id)
-            this.idEdit = id;
-            this.editFormOptions[0].value= productEdit.name;
-            this.editFormOptions[1].value= productEdit.stock;
-            this.editFormOptions[2].value= productEdit.description;
-            this.dropDowns[1].selectedItem = productEdit.status;
-            console.log(id);
+            var obj = this;
+            $.ajax({
+                    url: './class/product-Delete.php',
+                    data: {'id': id},
+                    type: 'Post',
+                    async : false,
+                    success: function (result) {
+                        //upate all required variables.
+                        obj.adding = false;
+                        obj.getInfo('products.php', 'get');
+                        Swal.fire({
+                            title: 'Éxito!',
+                            html: 'Producto eliminado exitosamente',
+                            icon: 'success',
+                            confirmButtonText: 'Aceptar'
+                        });
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+        },
+        editProduct: function(id){
+            // this.editing = true;
+            // var productEdit = this.products.find(x => x.id == id)
+            // this.idEdit = id;
+            // this.editFormOptions[0].value= productEdit.name;
+            // this.editFormOptions[1].value= productEdit.stock;
+            // this.editFormOptions[2].value= productEdit.description;
+            // this.dropDowns[1].selectedItem = productEdit.status;
+            // console.log(id);
+            console.log("not even implemented");
         },
         saveProduct: function () {
             //function to save a new product
             //check if all the ifo are filled
-            if (this.saveFormOptions.some(x => x.value == "") || this.dropDowns.some(x => x.selectedItem == "")) {
+            var obj = this;
+            if (this.saveFormOptions.some(x => x.value == "")) {
                 Swal.fire({
                     title: 'Error!',
                     text: 'Por favor diligencie todos los campos',
@@ -309,51 +325,47 @@ if (! empty($_SESSION["userId"])) {
                     confirmButtonText: 'Aceptar'
                 })
             } else {
-                var obj = this;
-                var form = $('#mainForm');
+                let name = reference =  price = weight =  category = stock = 0;
+
+                name = this.saveFormOptions[0].value; 
+                reference = this.saveFormOptions[1].value; 
+                price = this.saveFormOptions[2].value;
+                weight = this.saveFormOptions[3].value;
+                category = this.saveFormOptions[4].value;
+                stock = this.saveFormOptions[5].value;
+
+                var data = {name: name, reference: reference, price: price, weight: weight, category: category, stock: stock };
+                data = JSON.stringify(data);
+                console.log(data);
+
                 $.ajax({
-                    url: 'products',
-                    data: form.serialize(),
+                    url: './class/product-save.php',
+                    data: {'information': data},
                     type: 'Post',
+                    async : false,
                     success: function (result) {
-                        if ($.isEmptyObject(result.error)) {
-                            //upate all required variables.
-                            obj.adding = false;
-                            obj.clearForm();
-                            obj.getInfo('products', 'get');
-                            obj.footer.added += 1;
-                            obj.getSummary();
-                            obj.getInfo('summary', 'get');
-                            obj.checkedFilters = ['all'],
-                            Swal.fire({
-                                title: 'Éxito!',
-                                html: 'Producto agregado exitosamente',
-                                icon: 'success',
-                                confirmButtonText: 'Aceptar'
-                            });
-
-                        } else {
-                            var mensaje = JSON.stringify(result.error);
-                            mensaje = mensaje.replace(/,/g, "</li><li>");
-                            mensaje = mensaje.replace(/"/g, "");
-                            mensaje = mensaje.replace(/]/g, "");
-                            mensaje = mensaje.replace(/\[/g, "<li>");
-                            mensaje = '<ul style="text-align:left !important">' + mensaje + "</li></ul>";
-                            Swal.fire({
-                                title: 'Error!',
-                                html: mensaje,
-                                icon: 'error',
-                                confirmButtonText: 'Aceptar'
-                            });
-                        }
-
+                        console.log("estoy..");
+                        //upate all required variables.
+                        obj.adding = false;
+                        obj.clearForm();
+                        obj.getInfo('products.php', 'get');
+                        Swal.fire({
+                            title: 'Éxito!',
+                            html: 'Producto agregado exitosamente',
+                            icon: 'success',
+                            confirmButtonText: 'Aceptar'
+                        });
+                        
+                        console.log("estoy..");
+                      
                     },
                     error: function (error) {
                         console.log(error);
                     }
                 });
             }
-        }
+    
+        },
 
     },
     beforeMount() {
